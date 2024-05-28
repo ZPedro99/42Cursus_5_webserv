@@ -72,46 +72,34 @@ Request::~Request()
 
 int		Request::fillHeader(int socket)
 {
-	char buffer[50];
+	char buffer[1024];
 	bool firstLine = false;
-	while(1)
+	while(1) 
 	{
-		bzero(buffer, 50);
 		ssize_t bytesRead = recv(socket, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
-		std::cout << "bytes read: " << bytesRead << std::endl;
-		if(bytesRead < 0)
-		{
-			std::cout << "leu menos que 0" << std::endl;
-			return -1;
-		}
-		if (bytesRead == 0)
+		if (bytesRead <= 0)
 			break;
-		//buffer[bytesRead] = 0;
+		buffer[bytesRead] = 0;
 		char *pos = strstr(buffer, "\r\n");
-		if (firstLine == false)
+		if (firstLine == false) 
 		{
-			size_t len = pos - buffer;
+			// This cast prevents basic_string::append error, in case buffer isn't correctly formatted
+			size_t len = pos - buffer;   
 			std::copy(buffer, buffer + len, std::back_inserter(_firstLine));
 			firstLine = true;
 		}
-		//std::copy(buffer, buffer + bytesRead, std::back_inserter(_fullRequest));
-		_fullRequest.append(buffer, bytesRead);
-		if (chunky && strstr(_fullRequest.c_str(), "\r\n0\r\n\r\n"))
+		std::copy(buffer, buffer + bytesRead, std::back_inserter(_fullRequest));
+
+		// End case for the last chunk in a chunked request
+		if (chunky && strstr(_fullRequest.c_str(), "\r\n0\r\n\r\n")) 
 		{
 			parseRequest();
 			reqLogger(gfullRequest);
 			chunky = false;
 			_isRequestComplete = true;
 			chunkDecoder();
-			std::cout << _requestBody << std::endl;
 			firstChunk = true;
 			return 1;
-		}
-		if(bytesRead < 49)
-		{
-			//bzero(buffer, bytesRead);
-			std::cout << "sai do loop" << std::endl;
-			break;
 		}
 	}
 	if (!chunky)

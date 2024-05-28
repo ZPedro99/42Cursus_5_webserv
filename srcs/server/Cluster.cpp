@@ -425,7 +425,7 @@ void	Cluster::startServers()
 					try 
 					{
 						if(event_buffer[i].events & EPOLLIN)
-							connectionHandler(client_socket, _fdMap[client_socket], epoll_fd, event_buffer);
+							connectionHandler(client_socket, _fdMap[client_socket]);
 					} 
 					catch (std::exception &e) 
 					{
@@ -466,13 +466,12 @@ public:
  * @param fd The file descriptor of the incoming connection.
  * @param server Pointer to the server instance handling the connection.
  */
-void	Cluster::connectionHandler(int fd, Server* server, int epoll_fd, struct epoll_event* event_buffer) 
+void	Cluster::connectionHandler(int fd, Server* server) 
 {
 	_activityTime[fd] = time(NULL);
 	if (std::find_if(server->getConnectionVector().begin(), server->getConnectionVector().end(), MatchFd(fd)) == server->getConnectionVector().end())
 		server->setConnection(fd);
-	if(server->sender(fd) == -1)
-		server->closeConnections(fd, epoll_fd, event_buffer, _fdMap, _activityTime);
+	server->sender(fd);
 }
 
 /* ===================== Info Display Functions ===================== */

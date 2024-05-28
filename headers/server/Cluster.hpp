@@ -62,7 +62,7 @@ class	Cluster
 		void	processClientSize(Server* server);
 		void	processLocations(Server* server);
 		void	startServers();
-		void	connectionHandler(int fd, Server* server, int epoll_fd, struct epoll_event* event_buffer);
+		void	connectionHandler(int fd, Server* server);
 
 		class ClusterException : public std::exception
 		{

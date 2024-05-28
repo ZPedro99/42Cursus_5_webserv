@@ -883,7 +883,7 @@ int	Server::sender(int socket)
 	if (req._isRequestComplete)
 		return (0);
 	resp.defaultFlags();
-	if (req.fillHeader(fd) != -1) 
+	if (req.fillHeader(fd)) 
 	{
 		if (req._isRequestComplete) 
 		{
@@ -892,8 +892,6 @@ int	Server::sender(int socket)
 			//return (0);
 		}
 	}
-	else
-		return -1;
 	// Check request size
 	reqCode = req.checkClientBodySize(this);
 	if (reqCode != 413) 
@@ -901,7 +899,6 @@ int	Server::sender(int socket)
 		// Parse the request URI, METHOD and HTTP VERSION. Returns appropriate response codes
 		reqCode = req.ConfigureRequest(this);
 		std::string host(req.getHost());
-		std::cout << "host is: " << host << std::endl;
 		std::size_t pos = host.find(':');
 		if (pos != std::string::npos)
 			host = host.substr(0, pos);
